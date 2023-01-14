@@ -1,5 +1,6 @@
 import requests
 import database
+import time
 from datetime import datetime
 from bs4 import BeautifulSoup as bs
 
@@ -15,22 +16,28 @@ class parsing(object):
         headers = {'accept': '*/*',
                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'}
 
-        time = str(datetime.today().hour) + ":" + str(datetime.today().minute)
+        while True:
 
-        try:
-            request_session = requests.Session()
-            requestGismeteo = request_session.get('https://www.gismeteo.ru/weather-moskovskiy-167398/now/', headers=headers)
-            requestYandex = request_session.get('https://yandex.ru/pogoda/?lat=55.60214996&lon=37.34654999', headers=headers)
+            if datetime.today().minute == 00 or datetime.today().minute == 15 or datetime.today().minute == 30 or datetime.today().minute == 45:
+                print("ion")
 
-            if (requestGismeteo.status_code == 200):
+                try:
+                    request_session = requests.Session()
+                    requestGismeteo = request_session.get('https://www.gismeteo.ru/weather-moskovskiy-167398/now/', headers=headers)
+                    requestYandex = request_session.get('https://yandex.ru/pogoda/?lat=55.60214996&lon=37.34654999', headers=headers)
 
-                db.database.creating_database(datetime.today().day, datetime.today().month, datetime.today().year,
-                    time, status="Успешно", temperature=parsing.parsing_temp(requestYandex),
-                    status_weat=parsing.parsing_status(requestGismeteo), speed_wind=parsing.parsing_wind(requestYandex))
+                    if (requestGismeteo.status_code == 200):
 
-        except ConnectionError:
-            db.database.creating_database(datetime.today().day, datetime.today().month, datetime.today().year,
-                    time, status="None", temperature="None", status_weat="None", speed_wind="None")
+                        db.database.creating_database(datetime.today().day, datetime.today().month, datetime.today().year,
+                            status="Успешно", temperature=parsing.parsing_temp(requestYandex),
+                            status_weat=parsing.parsing_status(requestGismeteo), speed_wind=parsing.parsing_wind(requestYandex))
+                        print("шашлык")
+                        time.sleep(70)
+
+                except ConnectionError:
+                    db.database.creating_database(datetime.today().day, datetime.today().month, datetime.today().year,
+                        status="None", temperature="None", status_weat="None", speed_wind="None")
+                    time.sleep(59)
 
     @staticmethod
     def parsing_temp(request):
